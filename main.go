@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/gocolly/colly"
+	"strconv"
+	"fmt"
 )
 
 func main() {
@@ -19,34 +21,42 @@ func main() {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	// Just for 1st page
-	payload := map[string]string{
-		"filterPageNumber": "1",
-		"filterCasesPerPage":   "100",
-		"filterFiltered": "1",
-	}
-
 	// Write CSV header
 	writer.Write([]string{"Status", "Case Number", "Date Created", "Application Number", "Parcel Number"})
 
-	// Instantiate default collector
-	c := colly.NewCollector()
+	var payload map[string]string
+	for i:=0;i<146;i++{
+		page := strconv.Itoa(i+1)
+		payload = map[string]string{
+			"filterPageNumber": page,
+			"filterCasesPerPage":   "100",
+			"filterFiltered": "1",
+		}
 
-	c.OnHTML("#county-setup tbody tr", func(e *colly.HTMLElement) {
-		writer.Write([]string{
-			e.ChildText(".text-left"),
-			e.ChildText("td:nth-child(3)"),
-			e.ChildText("td:nth-child(4)"),
-			e.ChildText("td:nth-child(5)"),
-			e.ChildText("td:nth-child(6)"),
+		// Instantiate default collector
+		c := colly.NewCollector()
+
+		c.OnHTML("#county-setup tbody tr", func(e *colly.HTMLElement) {
+			writer.Write([]string{
+				e.ChildText(".text-left"),
+				e.ChildText("td:nth-child(3)"),
+				e.ChildText("td:nth-child(4)"),
+				e.ChildText("td:nth-child(5)"),
+				e.ChildText("td:nth-child(6)"),
+			})
 		})
-	})
 
-	c.OnRequest(func(r *colly.Request) {
-		r.Headers.Set("Content-Type", "application/x-www-form-urlencoded")
-	})
+		c.OnRequest(func(r *colly.Request) {
+			r.Headers.Set("Content-Type", "application/x-www-form-urlencoded")
+		})
 
-	c.Post("https://miamidade.realtdm.com/public/cases/list",payload)
+		c.OnScraped(func(response *colly.Response) {
+			fmt.Println("Scrapped: ",page)
+		})
+
+		c.Post("https://miamidade.realtdm.com/public/cases/list",payload)
+
+	}
 
 	log.Printf("Scraping finished, check file %q for results\n", fName)
 }
