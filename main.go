@@ -22,7 +22,7 @@ func main() {
 	defer writer.Flush()
 
 	// Write CSV header
-	writer.Write([]string{"Status", "Case Number", "Date Created", "Application Number", "Parcel Number"})
+	writer.Write([]string{"Status", "Case Number", "Date Created", "Application Number", "Parcel Number","Sale Date"})
 
 	var payload map[string]string
 	for i:=0;i<146;i++{
@@ -43,6 +43,7 @@ func main() {
 				e.ChildText("td:nth-child(4)"),
 				e.ChildText("td:nth-child(5)"),
 				e.ChildText("td:nth-child(6)"),
+				e.ChildText("td:nth-child(7)"),
 			})
 		})
 
