@@ -24,6 +24,8 @@ func main() {
 	// Write CSV header
 	writer.Write([]string{"Status", "Case Number", "Date Created", "Application Number", "Parcel Number","Sale Date"})
 
+	fmt.Println("Scrapper started......")
+
 	var payload map[string]string
 	for i:=0;i<146;i++{
 		page := strconv.Itoa(i+1)
@@ -52,7 +54,7 @@ func main() {
 		})
 
 		c.OnScraped(func(response *colly.Response) {
-			fmt.Println("Scrapped: ",page)
+			fmt.Println("Scrapped: Page ",page)
 		})
 
 		c.Post("https://miamidade.realtdm.com/public/cases/list",payload)
