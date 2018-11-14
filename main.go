@@ -2,15 +2,23 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gocolly/colly"
-	"strconv"
-	"fmt"
 )
 
 func main() {
+	var numberOfPage int
+	if len(os.Args) > 1 {
+		numberOfPage, _ = strconv.Atoi(os.Args[1])
+	} else {
+		fmt.Print("Total number of page: ")
+		fmt.Scanln(&numberOfPage)
+	}
+
 	fName := "realtdm.csv"
 	file, err := os.Create(fName)
 	if err != nil {
@@ -22,17 +30,17 @@ func main() {
 	defer writer.Flush()
 
 	// Write CSV header
-	writer.Write([]string{"Status", "Case Number", "Date Created", "Application Number", "Parcel Number","Sale Date"})
+	writer.Write([]string{"Status", "Case Number", "Date Created", "Application Number", "Parcel Number", "Sale Date"})
 
 	fmt.Println("Scrapper started......")
 
 	var payload map[string]string
-	for i:=0;i<146;i++{
-		page := strconv.Itoa(i+1)
+	for i := 0; i < numberOfPage; i++ {
+		page := strconv.Itoa(i + 1)
 		payload = map[string]string{
-			"filterPageNumber": page,
-			"filterCasesPerPage":   "100",
-			"filterFiltered": "1",
+			"filterPageNumber":   page,
+			"filterCasesPerPage": "100",
+			"filterFiltered":     "1",
 		}
 
 		// Instantiate default collector
@@ -54,10 +62,10 @@ func main() {
 		})
 
 		c.OnScraped(func(response *colly.Response) {
-			fmt.Println("Scrapped: Page ",page)
+			fmt.Println("Scrapped: Page ", page)
 		})
 
-		c.Post("https://miamidade.realtdm.com/public/cases/list",payload)
+		c.Post("https://miamidade.realtdm.com/public/cases/list", payload)
 
 	}
 
